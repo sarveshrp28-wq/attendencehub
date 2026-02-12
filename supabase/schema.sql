@@ -50,6 +50,7 @@ create index if not exists attendance_date_idx on public.attendance(date);
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -68,6 +69,7 @@ create or replace function public.is_admin()
 returns boolean
 language sql
 stable
+set search_path = public
 as $$
   select lower(coalesce(auth.jwt() ->> 'email', '')) = 'attendencehub@gmail.com';
 $$;
@@ -125,36 +127,70 @@ alter table public.students enable row level security;
 alter table public.attendance enable row level security;
 
 drop policy if exists "Admin full access" on public.students;
-create policy "Admin full access"
+drop policy if exists "Student read own profile" on public.students;
+
+create policy "Students select access"
 on public.students
-for all
+for select
+to authenticated
+using (
+  public.is_admin()
+  or (select auth.uid()) = user_id
+);
+
+create policy "Admin insert students"
+on public.students
+for insert
+to authenticated
+with check (public.is_admin());
+
+create policy "Admin update students"
+on public.students
+for update
+to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
-drop policy if exists "Student read own profile" on public.students;
-create policy "Student read own profile"
+create policy "Admin delete students"
 on public.students
-for select
-using (auth.uid() = user_id);
+for delete
+to authenticated
+using (public.is_admin());
 
 drop policy if exists "Admin manage all attendance" on public.attendance;
-create policy "Admin manage all attendance"
-on public.attendance
-for all
-using (public.is_admin())
-with check (public.is_admin());
-
 drop policy if exists "Student read own attendance" on public.attendance;
-create policy "Student read own attendance"
+
+create policy "Attendance select access"
 on public.attendance
 for select
+to authenticated
 using (
-  auth.uid() = (
+  public.is_admin()
+  or (select auth.uid()) = (
     select s.user_id
     from public.students s
     where s.id = attendance.student_id
   )
 );
+
+create policy "Admin insert attendance"
+on public.attendance
+for insert
+to authenticated
+with check (public.is_admin());
+
+create policy "Admin update attendance"
+on public.attendance
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "Admin delete attendance"
+on public.attendance
+for delete
+to authenticated
+using (public.is_admin());
 
 -- Attendance stats view
 create or replace view public.student_attendance_stats as
@@ -201,6 +237,7 @@ returns table (
 )
 language sql
 stable
+set search_path = public
 as $$
   select *
   from public.student_attendance_stats
@@ -220,6 +257,7 @@ returns table (
 )
 language plpgsql
 stable
+set search_path = public
 as $$
 declare
   target_user uuid;
@@ -251,4 +289,3 @@ $$;
 grant select on public.student_attendance_stats to authenticated;
 grant execute on function public.get_my_attendance() to authenticated;
 grant execute on function public.get_monthly_attendance(uuid, date) to authenticated;
-

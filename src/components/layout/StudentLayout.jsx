@@ -1,11 +1,19 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { LayoutDashboard, CalendarDays, User, Settings, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  User,
+  Settings,
+  LogOut,
+  BarChart3
+} from "lucide-react";
 
 const links = [
   { to: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/student/attendance", label: "My Attendance", icon: CalendarDays },
+  { to: "/student/reports", label: "My Reports", icon: BarChart3 },
   { to: "/student/profile", label: "My Profile", icon: User },
   { to: "/student/settings", label: "Account", icon: Settings }
 ];

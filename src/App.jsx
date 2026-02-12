@@ -7,6 +7,8 @@ import AdminLayout from "./components/layout/AdminLayout";
 import StudentLayout from "./components/layout/StudentLayout";
 
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +25,7 @@ import StudentDashboard from "./pages/student/Dashboard";
 import StudentProfile from "./pages/student/Profile";
 import StudentAttendance from "./pages/student/Attendance";
 import StudentAttendanceCalendar from "./pages/student/AttendanceCalendar";
+import StudentReports from "./pages/student/Reports";
 import StudentSettings from "./pages/student/Settings";
 
 const App = () => {
@@ -48,6 +51,8 @@ const App = () => {
       />
 
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute allow={["admin"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
@@ -70,6 +75,7 @@ const App = () => {
           <Route path="profile" element={<StudentProfile />} />
           <Route path="attendance" element={<StudentAttendance />} />
           <Route path="attendance/calendar" element={<StudentAttendanceCalendar />} />
+          <Route path="reports" element={<StudentReports />} />
           <Route path="settings" element={<StudentSettings />} />
         </Route>
       </Route>

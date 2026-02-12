@@ -38,7 +38,10 @@ const StudentAttendanceCalendar = () => {
   const [attendance, setAttendance] = useState([]);
 
   const fetchMonth = async () => {
-    if (!student) return;
+    if (!student?.id) {
+      setAttendance([]);
+      return;
+    }
     const start = format(startOfMonth(currentMonth), "yyyy-MM-dd");
     const end = format(endOfMonth(currentMonth), "yyyy-MM-dd");
     const { data } = await supabase
@@ -52,7 +55,7 @@ const StudentAttendanceCalendar = () => {
 
   useEffect(() => {
     fetchMonth();
-  }, [student, currentMonth]);
+  }, [student?.id, currentMonth]);
 
   const days = useMemo(() => getDaysForGrid(currentMonth), [currentMonth]);
   const map = useMemo(() => buildAttendanceMap(attendance), [attendance]);

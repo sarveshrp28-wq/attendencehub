@@ -19,27 +19,40 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     const loadStats = async () => {
-      const { data } = await getMyStats();
-      const { data: monthlyData } = await getMonthlyStats({
-        month: new Date().toISOString().slice(0, 10)
-      });
-      const { data: attendanceData } = await supabase
-        .from("attendance")
-        .select("*")
-        .eq("student_id", student?.id)
-        .order("date", { ascending: false })
-        .limit(60);
+      if (!student?.id) {
+        setStats(null);
+        setMonthlyStats(null);
+        setAttendance([]);
+        setLoading(false);
+        return;
+      }
 
-      setStats(data?.[0] || null);
-      setMonthlyStats(monthlyData?.[0] || null);
-      setAttendance(attendanceData || []);
-      setLoading(false);
+      try {
+        const [{ data }, { data: monthlyData }, { data: attendanceData }] =
+          await Promise.all([
+            getMyStats(),
+            getMonthlyStats({
+              month: new Date().toISOString().slice(0, 10)
+            }),
+            supabase
+              .from("attendance")
+              .select("*")
+              .eq("student_id", student.id)
+              .order("date", { ascending: false })
+              .limit(60)
+          ]);
+
+        setStats(data?.[0] || null);
+        setMonthlyStats(monthlyData?.[0] || null);
+        setAttendance(attendanceData || []);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (student) {
-      loadStats();
-    }
-  }, [student]);
+    setLoading(true);
+    loadStats();
+  }, [student?.id]);
 
   const streak = useMemo(() => calculateStreak(attendance), [attendance]);
   const attendancePercentage = stats?.attendance_percentage ?? 0;

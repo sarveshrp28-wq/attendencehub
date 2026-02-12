@@ -19,7 +19,11 @@ const StudentAttendance = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchAttendance = async () => {
-    if (!student) return;
+    if (!student?.id) {
+      setRecords([]);
+      setTotalCount(0);
+      return;
+    }
     let query = supabase
       .from("attendance")
       .select("*", { count: "exact" })
@@ -42,7 +46,7 @@ const StudentAttendance = () => {
 
   useEffect(() => {
     fetchAttendance();
-  }, [student, month, page]);
+  }, [student?.id, month, page]);
 
   const pageCount = useMemo(
     () => Math.ceil(totalCount / PAGE_SIZE) || 1,

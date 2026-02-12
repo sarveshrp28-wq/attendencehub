@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { listStudents, deleteStudent } from "../../lib/api";
+import { deleteStudent, listStudents, sendPasswordReset } from "../../lib/api";
 import { formatDate } from "../../lib/formatters";
 import SectionHeader from "../../components/ui/SectionHeader";
 import Card from "../../components/ui/Card";
@@ -50,6 +50,20 @@ const AdminStudents = () => {
     if (data?.warning) {
       setTimeout(() => setActionState(""), 3500);
     }
+  };
+
+  const handleSendPasswordReset = async (student) => {
+    setActionState(`Sending reset email to ${student.email}...`);
+    const { data, error } = await sendPasswordReset({
+      email: student.email,
+      userId: student.user_id
+    });
+    if (error) {
+      setActionState(error.message);
+      return;
+    }
+    setActionState(data?.message || data?.warning || "Password reset email sent.");
+    setTimeout(() => setActionState(""), 3500);
   };
 
   return (
@@ -112,6 +126,13 @@ const AdminStudents = () => {
                       >
                         Edit
                       </Link>
+                      <Button
+                        variant="secondary"
+                        className="text-xs"
+                        onClick={() => handleSendPasswordReset(student)}
+                      >
+                        Reset Password
+                      </Button>
                       <Button
                         variant="secondary"
                         className="text-xs"
